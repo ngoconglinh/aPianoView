@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.application'
+    id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'maven-publish'
 }
@@ -87,7 +87,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.ngoconglinh'
             artifactId = 'aPianoView'
-            version = '1.0.0'
+            version = '1.0.2'
 
             afterEvaluate {
                 from components.release
