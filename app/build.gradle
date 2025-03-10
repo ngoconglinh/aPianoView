@@ -85,6 +85,10 @@ dependencies {
 publishing {
     publications {
         release(MavenPublication) {
+            groupId = 'com.github.ngoconglinh'
+            artifactId = 'aPianoView'
+            version = '1.0.0'
+
             afterEvaluate {
                 from components.release
             }
