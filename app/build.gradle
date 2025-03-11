@@ -87,7 +87,7 @@ publishing {
         release(MavenPublication) {
             groupId = 'com.github.ngoconglinh'
             artifactId = 'aPianoView'
-            version = '1.0.3'
+            version = '1.0.4'
 
             afterEvaluate {
                 from components.release

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="PianoView">
-        <attr name="keyBlackUpDrawable" format="reference|integer"/>
-        <attr name="keyBlackDownDrawable" format="reference|integer"/>
-        <attr name="keyWhiteUpDrawable" format="reference|integer"/>
-        <attr name="keyWhiteDownDrawable" format="reference|integer"/>
+        <attr name="keyBlackUpDrawable" format="reference"/>
+        <attr name="keyBlackDownDrawable" format="reference"/>
+        <attr name="keyWhiteUpDrawable" format="reference"/>
+        <attr name="keyWhiteDownDrawable" format="reference"/>
     </declare-styleable>
 
 </resources>
