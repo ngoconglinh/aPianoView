@@ -682,6 +682,9 @@ public class PianoView extends View {
                     if (left < minRange || right > maxRange) {//不在当前可见区域的范围之类
                         int progress = (int) ((float) left * 100 / (float) getPianoWidth());
                         scroll(progress);
+                        if (autoPlayListener != null) {
+                            autoPlayListener.onScroll(progress);
+                        }
                     }
                 }
             }

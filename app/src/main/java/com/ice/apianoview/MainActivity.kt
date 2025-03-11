@@ -229,6 +229,10 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
         isPlay = true
     }
 
+    override fun onScroll(progress: Int) {
+        binding.pianoBar.progress = progress
+    }
+
     override fun onPianoAutoPlayEnd() {
         isPlay = false
     }

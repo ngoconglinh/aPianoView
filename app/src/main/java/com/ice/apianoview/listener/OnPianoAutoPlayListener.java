@@ -13,6 +13,8 @@ public interface OnPianoAutoPlayListener {
      */
     void onPianoAutoPlayStart();
 
+    void onScroll(int progress);
+
     /**
      * 自动播放结束
      */
