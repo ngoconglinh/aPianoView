@@ -7,4 +7,9 @@
         <attr name="keyWhiteDownDrawable" format="reference"/>
     </declare-styleable>
 
+    <declare-styleable name="PianoBar">
+        <attr name="imageBar" format="reference"/>
+        <attr name="progress" format="integer"/>
+    </declare-styleable>
+
 </resources>

@@ -24,6 +24,8 @@ dependencyResolutionManagement {
     }
 }
 ```
+
+in **xml**
 ```xml
 
 <com.ice.apianoview.view.PianoView
@@ -35,8 +37,37 @@ dependencyResolutionManagement {
     app:keyWhiteUpDrawable="@drawable/white_up_theme_3"
     app:keyBlackDownDrawable="@drawable/black_down"
     app:keyBlackUpDrawable="@drawable/black_up"/>
+
 ```
 
+Progress View for **PianoView**
+```xml
+
+<com.ice.apianoview.extention.PianoBar
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    app:imageBar="@drawable/piano_bar"
+    app:progress="0"
+    android:layout_weight="1"/>
+
+```
+
+Add PianoBar Listener to **PianoView**
+```kotlin
+
+    class MainActivity : AppCompatActivity(), PianoBar.ProgressListener {
+        
+        //Another code
+        
+        override fun onPianoInitFinish() {
+            binding.pianoBar.addListener(this)
+        }
+
+        override fun onUserChangedProgress(progress: Int) {
+            binding.pianoView.scroll(progress)
+        }
+    }
+```
 
 
 <h2 id="creators">Special Thanks :heart:</h2>

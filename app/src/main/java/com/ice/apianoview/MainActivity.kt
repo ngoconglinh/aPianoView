@@ -6,12 +6,13 @@ import android.widget.SeekBar
 import com.ice.apianoview.databinding.ActivityMainBinding
 import com.ice.apianoview.entity.AutoPlayEntity
 import com.ice.apianoview.entity.Piano
+import com.ice.apianoview.extention.PianoBar
 import com.ice.apianoview.listener.OnLoadAudioListener
 import com.ice.apianoview.listener.OnPianoAutoPlayListener
 import com.ice.apianoview.listener.OnPianoListener
 
-class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener, SeekBar.OnSeekBarChangeListener,
-    OnPianoAutoPlayListener {
+class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
+    OnPianoAutoPlayListener, PianoBar.ProgressListener {
     private lateinit var binding: ActivityMainBinding
 
     private var scrollProgress = 0
@@ -166,34 +167,33 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener, 
         binding.pianoView.setPianoListener(this)
         binding.pianoView.setAutoPlayListener(this)
         binding.pianoView.setLoadAudioListener(this)
-        binding.sb.setOnSeekBarChangeListener(this)
     }
 
     private fun handleEvent() {
         var progress: Int
 
-        binding.ivLeftArrow.setOnClickListener {
-            if (scrollProgress == 0) {
-                progress = 0
-            } else {
-                progress = binding.sb.progress - scrollProgress
-                if (progress < 0) {
-                    progress = 0
-                }
-            }
-            binding.sb.progress = progress
-        }
-        binding.ivRightArrow.setOnClickListener {
-            if (scrollProgress == 0) {
-                progress = 100
-            } else {
-                progress = binding.sb.progress + scrollProgress
-                if (progress > 100) {
-                    progress = 100
-                }
-            }
-            binding.sb.progress = progress
-        }
+//        binding.ivLeftArrow.setOnClickListener {
+//            if (scrollProgress == 0) {
+//                progress = 0
+//            } else {
+//                progress = binding.sb.progress - scrollProgress
+//                if (progress < 0) {
+//                    progress = 0
+//                }
+//            }
+//            binding.sb.progress = progress
+//        }
+//        binding.ivRightArrow.setOnClickListener {
+//            if (scrollProgress == 0) {
+//                progress = 100
+//            } else {
+//                progress = binding.sb.progress + scrollProgress
+//                if (progress > 100) {
+//                    progress = 100
+//                }
+//            }
+//            binding.sb.progress = progress
+//        }
         binding.ivMusic.setOnClickListener {
             if (!isPlay) {
                 binding.pianoView.autoPlay(litterStarList)
@@ -202,7 +202,7 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener, 
     }
 
     override fun onPianoInitFinish() {
-
+        binding.pianoBar.addListener(this)
     }
 
     override fun onPianoClick(type: Piano.PianoKeyType?, voice: Piano.PianoVoice?, group: Int, positionOfGroup: Int) {
@@ -225,18 +225,6 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener, 
 
     }
 
-    override fun onProgressChanged(p0: SeekBar?, p1: Int, p2: Boolean) {
-        binding.pianoView.scroll(p1)
-    }
-
-    override fun onStartTrackingTouch(p0: SeekBar?) {
-
-    }
-
-    override fun onStopTrackingTouch(p0: SeekBar?) {
-
-    }
-
     override fun onPianoAutoPlayStart() {
         isPlay = true
     }
@@ -247,5 +235,9 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener, 
     override fun onDestroy() {
         super.onDestroy()
         binding.pianoView.releaseAutoPlay()
+    }
+
+    override fun onUserChangedProgress(progress: Int) {
+        binding.pianoView.scroll(progress)
     }
 }
