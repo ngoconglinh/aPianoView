@@ -702,10 +702,12 @@ public class PianoView extends View {
     public void setScale(float scale) {
         if (scale <= 0) return;
         scaleX = scale;
+        piano = null;
+        isInitFinish = false;
         invalidate();
     }
 
-    public Boolean scaleUp() {
+    public Boolean zoomIn() {
         float scale = getScale() + 0.2f;
         if (scale > 2f) {
             scale = 2f;
@@ -714,13 +716,13 @@ public class PianoView extends View {
         return scale == 2f;
     }
 
-    public Boolean scaleDown() {
+    public Boolean zoomOut() {
         float scale = getScale() - 0.2f;
-        if (scale < 0f) {
-            scale = 0f;
+        if (scale < 1f) {
+            scale = 1f;
         }
         setScale(scale);
-        return scale == 0f;
+        return scale == 1f;
     }
 
     public float getScale() {

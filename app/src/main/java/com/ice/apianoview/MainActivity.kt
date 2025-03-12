@@ -2,6 +2,7 @@ package com.ice.apianoview
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.SeekBar
 import com.ice.apianoview.databinding.ActivityMainBinding
 import com.ice.apianoview.entity.AutoPlayEntity
@@ -175,9 +176,17 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
                 binding.pianoView.autoPlay(litterStarList)
             }
         }
+
+        binding.ivZoomOut.setOnClickListener {
+            binding.pianoView.zoomOut()
+        }
+        binding.ivZoomIn.setOnClickListener {
+            binding.pianoView.zoomIn()
+        }
     }
 
     override fun onPianoInitFinish() {
+        Log.d("56123132312", "onPianoInitFinish: ")
         binding.pianoBar.apply {
             attackPianoWidth = binding.pianoView.pianoWidth
             attackWidth = binding.pianoView.layoutWidth
