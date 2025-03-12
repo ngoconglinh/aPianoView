@@ -8,7 +8,6 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.StateListDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -17,7 +16,6 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Pair;
-import android.util.Xml;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -32,12 +30,6 @@ import com.ice.apianoview.listener.OnPianoAutoPlayListener;
 import com.ice.apianoview.listener.OnPianoListener;
 import com.ice.apianoview.utils.AudioUtils;
 
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlSerializer;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -70,7 +62,12 @@ public class PianoView extends View {
     //布局的宽度
     private int layoutWidth = 0;
     //缩放比例
-    private float scale = 1;
+    private float scaleX = 1;
+    private float scaleY = 1;
+
+    private float speedFactor = 1.0f;
+
+    private boolean isShowNote = true;
     //音频加载接口
     private OnLoadAudioListener loadAudioListener;
     //自动播放接口
@@ -159,7 +156,7 @@ public class PianoView extends View {
                 break;
         }
         //设置缩放比例
-        scale = (float) (height - getPaddingTop() - getPaddingBottom()) / (float) (whiteKeyHeight);
+        scaleY = (float) (height - getPaddingTop() - getPaddingBottom()) / (float) (whiteKeyHeight);
         layoutWidth = width - getPaddingLeft() - getPaddingRight();
         //设置布局高度和宽度
         setMeasuredDimension(width, height);
@@ -175,7 +172,7 @@ public class PianoView extends View {
         if (piano == null) {
             minRange = 0;
             maxRange = layoutWidth;
-            piano = new Piano(context, scale, blackKeyDrawable, whiteKeyDrawable);
+            piano = new Piano(context, Pair.create(scaleX, scaleY), blackKeyDrawable, whiteKeyDrawable);
             //获取白键
             whitePianoKeys = piano.getWhitePianoKeys();
             //获取黑键
@@ -201,21 +198,23 @@ public class PianoView extends View {
 //          paint.setColor(Color.parseColor(pianoColors[i]));
                     key.getKeyDrawable().draw(canvas);
                     //初始化音名区域
-                    Rect r = key.getKeyDrawable().getBounds();
-                    int sideLength = (r.right - r.left) / 2;
-                    int left = r.left + sideLength / 2;
-                    int top = r.bottom - sideLength - sideLength / 3;
-                    int right = r.right - sideLength / 2;
-                    int bottom = r.bottom - sideLength / 3;
-                    square.set(left, top, right, bottom);
+                    if (isShowNote) {
+                        Rect r = key.getKeyDrawable().getBounds();
+                        int sideLength = (r.right - r.left) / 2;
+                        int left = r.left + sideLength / 2;
+                        int top = r.bottom - sideLength - sideLength / 3;
+                        int right = r.right - sideLength / 2;
+                        int bottom = r.bottom - sideLength / 3;
+                        square.set(left, top, right, bottom);
 //          canvas.drawRoundRect(square, 6f, 6f, paint);
-                    paint.setColor(Color.BLACK);
-                    paint.setTextSize(sideLength / 1.8f);
-                    Paint.FontMetricsInt fontMetrics = paint.getFontMetricsInt();
-                    int baseline =
-                            (int) ((square.bottom + square.top - fontMetrics.bottom - fontMetrics.top) / 2);
-                    paint.setTextAlign(Paint.Align.CENTER);
-                    canvas.drawText(key.getLetterName(), square.centerX(), baseline, paint);
+                        paint.setColor(Color.BLACK);
+                        paint.setTextSize(sideLength / 1.8f);
+                        Paint.FontMetricsInt fontMetrics = paint.getFontMetricsInt();
+                        int baseline =
+                                (int) ((square.bottom + square.top - fontMetrics.bottom - fontMetrics.top) / 2);
+                        paint.setTextAlign(Paint.Align.CENTER);
+                        canvas.drawText(key.getLetterName(), square.centerX(), baseline, paint);
+                    }
                 }
             }
         }
@@ -468,9 +467,11 @@ public class PianoView extends View {
                                             break;
                                     }
                                 }
-                                Thread.sleep(entity.getCurrentBreakTime() / 2);
+
+                                long mBreak = (entity.getCurrentBreakTime() / 2);
+                                Thread.sleep((long)(mBreak / speedFactor));
                                 autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
-                                Thread.sleep(entity.getCurrentBreakTime() / 2);
+                                Thread.sleep((long)(mBreak / speedFactor));
                             }
                         }
                     }
@@ -696,5 +697,48 @@ public class PianoView extends View {
     protected void onRestoreInstanceState(Parcelable state) {
         super.onRestoreInstanceState(state);
         postDelayed(() -> scroll(progress), 200);
+    }
+
+    public void setScale(float scale) {
+        if (scale <= 0) return;
+        scaleX = scale;
+        invalidate();
+    }
+
+    public Boolean scaleUp() {
+        float scale = getScale() + 0.2f;
+        if (scale > 2f) {
+            scale = 2f;
+        }
+        setScale(scale);
+        return scale == 2f;
+    }
+
+    public Boolean scaleDown() {
+        float scale = getScale() - 0.2f;
+        if (scale < 0f) {
+            scale = 0f;
+        }
+        setScale(scale);
+        return scale == 0f;
+    }
+
+    public float getScale() {
+        return scaleX;
+    }
+
+    public void setSpeed(float speed) {
+        speedFactor = speed;
+    }
+
+    public void isShowNote(boolean isShow) {
+        isShowNote = isShow;
+        isActivated();
+    }
+
+    public void setStyle(int keyBlackDown, int keyBlackUp, int keyWhiteDown, int keyWhiteUp) {
+        blackKeyDrawable = Pair.create(keyBlackDown, keyBlackUp);
+        whiteKeyDrawable = Pair.create(keyWhiteDown, keyWhiteUp);
+        invalidate();
     }
 }

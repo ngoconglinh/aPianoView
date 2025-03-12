@@ -170,30 +170,6 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
     }
 
     private fun handleEvent() {
-        var progress: Int
-
-//        binding.ivLeftArrow.setOnClickListener {
-//            if (scrollProgress == 0) {
-//                progress = 0
-//            } else {
-//                progress = binding.sb.progress - scrollProgress
-//                if (progress < 0) {
-//                    progress = 0
-//                }
-//            }
-//            binding.sb.progress = progress
-//        }
-//        binding.ivRightArrow.setOnClickListener {
-//            if (scrollProgress == 0) {
-//                progress = 100
-//            } else {
-//                progress = binding.sb.progress + scrollProgress
-//                if (progress > 100) {
-//                    progress = 100
-//                }
-//            }
-//            binding.sb.progress = progress
-//        }
         binding.ivMusic.setOnClickListener {
             if (!isPlay) {
                 binding.pianoView.autoPlay(litterStarList)
@@ -202,7 +178,11 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
     }
 
     override fun onPianoInitFinish() {
-        binding.pianoBar.addListener(this)
+        binding.pianoBar.apply {
+            attackPianoWidth = binding.pianoView.pianoWidth
+            attackWidth = binding.pianoView.layoutWidth
+            addListener(this@MainActivity)
+        }
     }
 
     override fun onPianoClick(type: Piano.PianoKeyType?, voice: Piano.PianoVoice?, group: Int, positionOfGroup: Int) {
