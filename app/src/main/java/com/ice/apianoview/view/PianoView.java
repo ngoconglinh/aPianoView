@@ -401,89 +401,95 @@ public class PianoView extends View {
      *
      * @param autoPlayEntities 自动播放实体列表
      */
+    private Thread autoPlayThread;
     public void autoPlay(final List<AutoPlayEntity> autoPlayEntities) {
         if (isAutoPlaying) {
             return;
         }
         isAutoPlaying = true;
         setCanPress(false);
-        new Thread() {
-            @Override
-            public void run() {
-                //开始
+
+        autoPlayThread = new Thread(() -> {
+            try {
                 if (autoPlayHandler != null) {
                     autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_START);
                 }
-                //播放
-                try {
-                    if (autoPlayEntities != null) {
-                        for (AutoPlayEntity entity : autoPlayEntities) {
-                            if (entity != null) {
-                                if (entity.getType() != null) {
-                                    switch (entity.getType()) {
-                                        case BLACK://黑键
-                                            PianoKey blackKey = null;
-                                            if (entity.getGroup() == 0) {
-                                                if (entity.getPosition() == 0) {
-                                                    blackKey = blackPianoKeys.get(0)[0];
-                                                }
-                                            } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
-                                                if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
-                                                    blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
-                                                }
-                                            }
-                                            if (blackKey != null) {
-                                                Message msg = Message.obtain();
-                                                msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
-                                                msg.obj = blackKey;
-                                                autoPlayHandler.sendMessage(msg);
-                                            }
-                                            break;
-                                        case WHITE://白键
-                                            PianoKey whiteKey = null;
-                                            if (entity.getGroup() == 0) {
-                                                if (entity.getPosition() == 0) {
-                                                    whiteKey = whitePianoKeys.get(0)[0];
-                                                } else if (entity.getPosition() == 1) {
-                                                    whiteKey = whitePianoKeys.get(0)[1];
-                                                }
-                                            } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
-                                                if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
-                                                    whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
-                                                }
-                                            } else if (entity.getGroup() == 8) {
-                                                if (entity.getPosition() == 0) {
-                                                    whiteKey = whitePianoKeys.get(8)[0];
-                                                }
-                                            }
-                                            if (whiteKey != null) {
-                                                Message msg = Message.obtain();
-                                                msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
-                                                msg.obj = whiteKey;
-                                                autoPlayHandler.sendMessage(msg);
-                                            }
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
 
-                                long mBreak = (entity.getCurrentBreakTime() / 2);
-                                Thread.sleep((long)(mBreak / speedFactor));
-                                autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
-                                Thread.sleep((long)(mBreak / speedFactor));
+                if (autoPlayEntities != null) {
+                    for (AutoPlayEntity entity : autoPlayEntities) {
+                        if (Thread.currentThread().isInterrupted()) break; // Kiểm tra nếu bị hủy thì dừng
+
+                        if (entity != null && entity.getType() != null) {
+                            switch (entity.getType()) {
+                                case BLACK:
+                                    PianoKey blackKey = null;
+                                    if (entity.getGroup() == 0) {
+                                        if (entity.getPosition() == 0) {
+                                            blackKey = blackPianoKeys.get(0)[0];
+                                        }
+                                    } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
+                                        if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
+                                            blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
+                                        }
+                                    }
+                                    if (blackKey != null) {
+                                        Message msg = Message.obtain();
+                                        msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
+                                        msg.obj = blackKey;
+                                        autoPlayHandler.sendMessage(msg);
+                                    }
+                                    break;
+                                case WHITE:
+                                    PianoKey whiteKey = null;
+                                    if (entity.getGroup() == 0) {
+                                        if (entity.getPosition() == 0) {
+                                            whiteKey = whitePianoKeys.get(0)[0];
+                                        } else if (entity.getPosition() == 1) {
+                                            whiteKey = whitePianoKeys.get(0)[1];
+                                        }
+                                    } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
+                                        if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
+                                            whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
+                                        }
+                                    } else if (entity.getGroup() == 8) {
+                                        if (entity.getPosition() == 0) {
+                                            whiteKey = whitePianoKeys.get(8)[0];
+                                        }
+                                    }
+                                    if (whiteKey != null) {
+                                        Message msg = Message.obtain();
+                                        msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
+                                        msg.obj = whiteKey;
+                                        autoPlayHandler.sendMessage(msg);
+                                    }
+                                    break;
+                                default:
+                                    break;
                             }
                         }
+
+                        long mBreak = (entity.getCurrentBreakTime() / 2);
+                        Thread.sleep((long) (mBreak / speedFactor));
+
+                        if (Thread.currentThread().isInterrupted()) break; // Kiểm tra nếu bị hủy thì dừng
+
+                        autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
+                        Thread.sleep((long) (mBreak / speedFactor));
+
+                        if (Thread.currentThread().isInterrupted()) break; // Kiểm tra nếu bị hủy thì dừng
                     }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                 }
-                //结束
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Đảm bảo luồng thực sự dừng
+            } finally {
                 if (autoPlayHandler != null) {
                     autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_END);
                 }
+                isAutoPlaying = false;
             }
-        }.start();
+        });
+
+        autoPlayThread.start();
     }
 
     /**
@@ -493,6 +499,15 @@ public class PianoView extends View {
         if (utils != null) {
             utils.stop();
         }
+    }
+
+    public void stopAutoPlay() {
+        if (autoPlayThread != null) {
+            autoPlayThread.interrupt();
+            autoPlayThread = null;
+        }
+        autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
+        autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_END);
     }
 
     /**
@@ -618,6 +633,8 @@ public class PianoView extends View {
      * @param msg 消息实体
      */
     private void handleAutoPlay(Message msg) {
+
+        Log.e("6229432423", "handleAutoPlay:");
         switch (msg.what) {
             case HANDLE_AUTO_PLAY_BLACK_DOWN://播放黑键
                 if (msg.obj != null) {
@@ -733,14 +750,22 @@ public class PianoView extends View {
         speedFactor = speed;
     }
 
+    /**
+     * is show text A0, B0, C1, D1.... or not
+     */
     public void isShowNote(boolean isShow) {
         isShowNote = isShow;
-        isActivated();
+        invalidate();
     }
 
+    /**
+     * style for key, input is a drawable id
+     * */
     public void setStyle(int keyBlackDown, int keyBlackUp, int keyWhiteDown, int keyWhiteUp) {
         blackKeyDrawable = Pair.create(keyBlackDown, keyBlackUp);
         whiteKeyDrawable = Pair.create(keyWhiteDown, keyWhiteUp);
+        piano = null;
+        isInitFinish = false;
         invalidate();
     }
 }

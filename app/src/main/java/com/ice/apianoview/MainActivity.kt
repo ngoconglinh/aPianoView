@@ -174,6 +174,8 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
         binding.ivMusic.setOnClickListener {
             if (!isPlay) {
                 binding.pianoView.autoPlay(litterStarList)
+            } else {
+                binding.pianoView.stopAutoPlay()
             }
         }
 
