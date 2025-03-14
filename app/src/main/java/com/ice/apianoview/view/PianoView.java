@@ -765,6 +765,14 @@ public class PianoView extends View {
         whiteKeyDrawable = Pair.create(keyWhiteDown, keyWhiteUp);
         refreshLayout();
     }
+    /**
+     * style for key, input is a string path to image in storage
+     * */
+    public void setStyle(String keyBlackDown, String keyBlackUp, String keyWhiteDown, String keyWhiteUp) {
+        blackKeyDrawable = Pair.create(keyBlackDown, keyBlackUp);
+        whiteKeyDrawable = Pair.create(keyWhiteDown, keyWhiteUp);
+        refreshLayout();
+    }
 
     public void refreshLayout() {
         piano = null;
