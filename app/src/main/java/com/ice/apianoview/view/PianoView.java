@@ -29,7 +29,6 @@ import com.ice.apianoview.listener.OnLoadAudioListener;
 import com.ice.apianoview.listener.OnPianoAutoPlayListener;
 import com.ice.apianoview.listener.OnPianoListener;
 import com.ice.apianoview.utils.AudioUtils;
-import com.ice.apianoview.utils.PianoConvertUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Created by ChengTao on 2016-11-25.
  */
 
-public class PianoView extends View {
+public class PianoView extends View implements Piano.PianoCallback {
     private final static String TAG = "PianoView";
     //定义钢琴键
     private Piano piano = null;
@@ -139,7 +138,7 @@ public class PianoView extends View {
         Log.e(TAG, "onMeasure");
         //最小高度
 
-        Drawable mWhiteDrawable = PianoConvertUtils.getDrawable(context, whiteKeyDrawable).second;
+        Drawable mWhiteDrawable = ContextCompat.getDrawable(context, R.drawable.white_down);
         int whiteKeyHeight = mWhiteDrawable.getIntrinsicHeight();
         //获取布局中的高度和宽度及其模式
         int width = MeasureSpec.getSize(widthMeasureSpec);
@@ -171,27 +170,40 @@ public class PianoView extends View {
     protected void onDraw(Canvas canvas) {
         //初始化钢琴
         if (piano == null) {
+            drawPianoKey(canvas);
+            pianoListener.onPianoStartInit();
             minRange = 0;
             maxRange = layoutWidth;
-            piano = new Piano(context, Pair.create(scaleX, scaleY), blackKeyDrawable, whiteKeyDrawable);
-            //获取白键
-            whitePianoKeys = piano.getWhitePianoKeys();
-            //获取黑键
-            blackPianoKeys = piano.getBlackPianoKeys();
-            //初始化播放器
-            if (utils == null) {
-                if (maxStream > 0) {
-                    utils = AudioUtils.getInstance(getContext(), loadAudioListener, maxStream);
-                } else {
-                    utils = AudioUtils.getInstance(getContext(), loadAudioListener);
-                }
-                try {
-                    utils.loadMusic(piano);
-                } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
-                }
+            piano = new Piano(context, Pair.create(scaleX, scaleY), blackKeyDrawable, whiteKeyDrawable, canvas, this);
+        } else {
+            drawPianoKey(canvas);
+        }
+    }
+
+    @Override
+    public void onInitFinished(Canvas canvas) {
+        //获取白键
+        whitePianoKeys = piano.getWhitePianoKeys();
+        //获取黑键
+        blackPianoKeys = piano.getBlackPianoKeys();
+        //初始化播放器
+        if (utils == null) {
+            if (maxStream > 0) {
+                utils = AudioUtils.getInstance(getContext(), loadAudioListener, maxStream);
+            } else {
+                utils = AudioUtils.getInstance(getContext(), loadAudioListener);
+            }
+            try {
+                utils.loadMusic(piano);
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
             }
         }
+
+        drawPianoKey(canvas);
+    }
+
+    private void drawPianoKey(Canvas canvas) {
         //初始化白键
         if (whitePianoKeys != null) {
             for (int i = 0; i < whitePianoKeys.size(); i++) {

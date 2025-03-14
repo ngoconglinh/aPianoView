@@ -13,6 +13,7 @@ public interface OnPianoListener {
     /**
      * 钢琴初始化成功
      */
+    void onPianoStartInit();
     void onPianoInitFinish();
 
     /**

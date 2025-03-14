@@ -1,9 +1,9 @@
 package com.ice.apianoview
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
-import android.widget.SeekBar
+import androidx.appcompat.app.AppCompatActivity
 import com.ice.apianoview.databinding.ActivityMainBinding
 import com.ice.apianoview.entity.AutoPlayEntity
 import com.ice.apianoview.entity.Piano
@@ -11,12 +11,11 @@ import com.ice.apianoview.extention.PianoBar
 import com.ice.apianoview.listener.OnLoadAudioListener
 import com.ice.apianoview.listener.OnPianoAutoPlayListener
 import com.ice.apianoview.listener.OnPianoListener
+import java.io.File
 
 class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
     OnPianoAutoPlayListener, PianoBar.ProgressListener {
     private lateinit var binding: ActivityMainBinding
-
-    private var scrollProgress = 0
 
     private var isPlay = false
     private var litterStarList: ArrayList<AutoPlayEntity> = arrayListOf()
@@ -162,6 +161,25 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
         initLitterStarList()
         initData()
         handleEvent()
+
+        val path = "${Environment.getExternalStorageDirectory()}/EasyPiano/Style/Piano/"
+        Log.d("555124141", "applyPianoStyle: ${File(path).exists()} - $path")
+        if (false) {
+            binding.pianoView.setStyle(
+                "${path}black_up.png",
+                "${path}black_down.png",
+                "${path}white_down_theme_2.png",
+                "${path}white_up_theme_2.png"
+            )
+        } else {
+            binding.pianoView.setStyle(
+                R.drawable.black_down,
+                R.drawable.black_up,
+                R.drawable.white_down,
+                R.drawable.white_up
+            )
+        }
+
     }
 
     private fun initData() {
@@ -185,6 +203,10 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
         binding.ivZoomIn.setOnClickListener {
             binding.pianoView.zoomIn()
         }
+    }
+
+    override fun onPianoStartInit() {
+
     }
 
     override fun onPianoInitFinish() {

@@ -5,12 +5,13 @@ package com.ice.apianoview.entity;
  */
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.graphics.drawable.StateListDrawable;
-import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
@@ -19,11 +20,11 @@ import androidx.core.content.ContextCompat;
 
 import com.google.gson.annotations.SerializedName;
 import com.ice.apianoview.R;
-import com.ice.apianoview.utils.PianoConvertUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 钢琴实体
@@ -52,26 +53,76 @@ public class Piano {
     //上下文
     private Context context;
 
+    private HashMap<String, Pair<Drawable, Drawable>> wHm = new HashMap<>();
+    private HashMap<String, Pair<Drawable, Drawable>> bHm = new HashMap<>();
 
+
+    private void performStep1(Pair<Object, Object> blackKey, Pair<Object, Object> whiteKey) {
+        bHm.clear();
+        wHm.clear();
+
+        for (int i = 0; i < BLACK_PIANO_KEY_GROUPS; i++) {
+            PianoKey[] keys;
+            switch (i) {
+                case 0:
+                    keys = new PianoKey[1];
+                    break;
+                default:
+                    keys = new PianoKey[5];
+                    break;
+            }
+            for (int j = 0; j < keys.length; j++) {
+                bHm.put(i + "" + j, Pair.create(getDrawable(blackKey).first, getDrawable(blackKey).second));
+            }
+        }
+
+        for (int i = 0; i < WHITE_PIANO_KEY_GROUPS; i++) {
+            PianoKey[] mKeys;
+            switch (i) {
+                case 0:
+                    mKeys = new PianoKey[2];
+                    break;
+                case 8:
+                    mKeys = new PianoKey[1];
+                    break;
+                default:
+                    mKeys = new PianoKey[7];
+                    break;
+            }
+            for (int j = 0; j < mKeys.length; j++) {
+                wHm.put(i + "" + j, Pair.create(getDrawable(whiteKey).first, getDrawable(whiteKey).second));
+            }
+        }
+    }
+    public interface PianoCallback {
+        void onInitFinished(Canvas canvas);
+    }
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     //构造函数
     public Piano(
             Context context,
             Pair<Float, Float> scale,
             Pair<Object, Object> blackKey,
-            Pair<Object, Object> whiteKey
+            Pair<Object, Object> whiteKey,
+            Canvas canvas,
+            PianoCallback callback
     ) {
         this.context = context;
         this.scaleX = scale.first;
         this.scaleY = scale.second;
-        initPiano(blackKey, whiteKey);
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            performStep1(blackKey, whiteKey);
+            mainHandler.post(() -> {
+                initPiano();
+                callback.onInitFinished(canvas);
+            });
+        });
     }
 
-
-    private void initPiano(Pair<Object, Object> blackDrawable, Pair<Object, Object> whiteDrawable) {
-        Drawable mBlackDrawable = PianoConvertUtils.getDrawable(context, blackDrawable).second;
-        Drawable mWhiteDrawable = PianoConvertUtils.getDrawable(context, whiteDrawable).second;
-        if (mBlackDrawable == null || mWhiteDrawable == null) return;
-
+    private void initPiano() {
+        Drawable mBlackDrawable = ContextCompat.getDrawable(context, R.drawable.black_down);
+        Drawable mWhiteDrawable = ContextCompat.getDrawable(context, R.drawable.white_up);
         if (scaleX > 0 && scaleY > 0) {
             //获取黑键和白键的高度和宽度
             blackKeyWidth = (int) ((float) mBlackDrawable.getIntrinsicWidth() * scaleX);
@@ -100,8 +151,8 @@ public class Piano {
                     keys[j].setPressed(false);
 
                     StateListDrawable drawable = new StateListDrawable();
-                    drawable.addState(new int[]{android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, blackDrawable).first);
-                    drawable.addState(new int[]{-android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, blackDrawable).second);
+                    drawable.addState(new int[]{android.R.attr.state_pressed}, bHm.get(i + "" + j).first);
+                    drawable.addState(new int[]{-android.R.attr.state_pressed}, bHm.get(i + "" + j).second);
                     drawable.setState(new int[]{-android.R.attr.state_pressed});
 
                     keys[j].setKeyDrawable(
@@ -158,8 +209,8 @@ public class Piano {
                     mKeys[j].setPressed(false);
 
                     StateListDrawable drawable = new StateListDrawable();
-                    drawable.addState(new int[]{android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, whiteDrawable).first);
-                    drawable.addState(new int[]{-android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, whiteDrawable).second);
+                    drawable.addState(new int[]{android.R.attr.state_pressed}, wHm.get(i + "" + j).first);
+                    drawable.addState(new int[]{-android.R.attr.state_pressed}, wHm.get(i + "" + j).second);
                     drawable.setState(new int[]{-android.R.attr.state_pressed});
                     mKeys[j].setKeyDrawable(
                             new ScaleDrawable(drawable,
@@ -373,5 +424,35 @@ public class Piano {
 
     public int getPianoWith() {
         return pianoWith;
+    }
+
+
+    public Pair<Drawable, Drawable> getDrawable(Pair<Object, Object> mDrawable) {
+        Log.d("555124141", "getDrawable: " + mDrawable);
+        Drawable downDrawable;
+        if (mDrawable.first instanceof String) {
+            downDrawable = Drawable.createFromPath((String) mDrawable.first);
+        } else if (mDrawable.first instanceof Integer) {
+            downDrawable = ContextCompat.getDrawable(context, (Integer) mDrawable.first);
+        } else {
+            downDrawable = null;
+        }
+
+        Drawable upDrawable;
+        if (mDrawable.second instanceof String) {
+            upDrawable = Drawable.createFromPath((String) mDrawable.second);
+        } else if (mDrawable.second instanceof Integer) {
+            upDrawable = ContextCompat.getDrawable(context, (Integer) mDrawable.second);
+        } else {
+            upDrawable = null;
+        }
+
+        Pair<Drawable, Drawable> result;
+        if (downDrawable == null || upDrawable == null) {
+            result = null;
+        } else {
+            result = Pair.create(downDrawable, upDrawable);
+        }
+        return result;
     }
 }

@@ -424,32 +424,4 @@ public class PianoConvertUtils {
         key.setFrequency(frequency);
         return key;
     }
-
-    public static Pair<Drawable, Drawable> getDrawable(Context context, Pair<Object, Object> mDrawable) {
-        Drawable downDrawable;
-        if (mDrawable.first instanceof String) {
-            downDrawable = Drawable.createFromPath((String) mDrawable.first);
-        } else if (mDrawable.first instanceof Integer) {
-            downDrawable = ContextCompat.getDrawable(context, (Integer) mDrawable.first);
-        } else {
-            downDrawable = null;
-        }
-
-        Drawable upDrawable;
-        if (mDrawable.second instanceof String) {
-            upDrawable = Drawable.createFromPath((String) mDrawable.second);
-        } else if (mDrawable.second instanceof Integer) {
-            upDrawable = ContextCompat.getDrawable(context, (Integer) mDrawable.second);
-        } else {
-            upDrawable = null;
-        }
-
-        Pair<Drawable, Drawable> result;
-        if (downDrawable == null || upDrawable == null) {
-            result = null;
-        } else {
-            result = Pair.create(downDrawable, upDrawable);
-        }
-        return result;
-    }
 }
