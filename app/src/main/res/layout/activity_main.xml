@@ -77,8 +77,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        app:keyWhiteDownDrawable="@drawable/white_down_theme_3"
-        app:keyWhiteUpDrawable="@drawable/white_up_theme_3"
+        app:keyWhiteDownDrawable="@drawable/white_down_theme_2"
+        app:keyWhiteUpDrawable="@drawable/white_up_theme_2"
         app:keyBlackDownDrawable="@drawable/black_down"
         app:keyBlackUpDrawable="@drawable/black_up"/>
 

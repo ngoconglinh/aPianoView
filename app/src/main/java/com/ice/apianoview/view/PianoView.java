@@ -29,6 +29,7 @@ import com.ice.apianoview.listener.OnLoadAudioListener;
 import com.ice.apianoview.listener.OnPianoAutoPlayListener;
 import com.ice.apianoview.listener.OnPianoListener;
 import com.ice.apianoview.utils.AudioUtils;
+import com.ice.apianoview.utils.PianoConvertUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -138,7 +139,7 @@ public class PianoView extends View {
         Log.e(TAG, "onMeasure");
         //最小高度
 
-        Drawable mWhiteDrawable = ContextCompat.getDrawable(context, whiteKeyDrawable.second);
+        Drawable mWhiteDrawable = PianoConvertUtils.getDrawable(context, whiteKeyDrawable).second;
         int whiteKeyHeight = mWhiteDrawable.getIntrinsicHeight();
         //获取布局中的高度和宽度及其模式
         int width = MeasureSpec.getSize(widthMeasureSpec);
@@ -162,8 +163,8 @@ public class PianoView extends View {
         setMeasuredDimension(width, height);
     }
 
-    private Pair<Integer, Integer> blackKeyDrawable;
-    private Pair<Integer, Integer> whiteKeyDrawable;
+    private Pair<Object, Object> blackKeyDrawable;
+    private Pair<Object, Object> whiteKeyDrawable;
 
 
     @Override
@@ -719,9 +720,7 @@ public class PianoView extends View {
     public void setScale(float scale) {
         if (scale <= 0) return;
         scaleX = scale;
-        piano = null;
-        isInitFinish = false;
-        invalidate();
+        refreshLayout();
     }
 
     public Boolean zoomIn() {
@@ -764,6 +763,10 @@ public class PianoView extends View {
     public void setStyle(int keyBlackDown, int keyBlackUp, int keyWhiteDown, int keyWhiteUp) {
         blackKeyDrawable = Pair.create(keyBlackDown, keyBlackUp);
         whiteKeyDrawable = Pair.create(keyWhiteDown, keyWhiteUp);
+        refreshLayout();
+    }
+
+    public void refreshLayout() {
         piano = null;
         isInitFinish = false;
         invalidate();

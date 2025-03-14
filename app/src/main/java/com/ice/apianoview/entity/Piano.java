@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.Environment;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
@@ -18,9 +19,11 @@ import androidx.core.content.ContextCompat;
 
 import com.google.gson.annotations.SerializedName;
 import com.ice.apianoview.R;
+import com.ice.apianoview.utils.PianoConvertUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * 钢琴实体
@@ -54,17 +57,21 @@ public class Piano {
     public Piano(
             Context context,
             Pair<Float, Float> scale,
-            Pair<Integer, Integer> blackKey,
-            Pair<Integer, Integer> whiteKey
+            Pair<Object, Object> blackKey,
+            Pair<Object, Object> whiteKey
     ) {
         this.context = context;
         this.scaleX = scale.first;
         this.scaleY = scale.second;
         initPiano(blackKey, whiteKey);
     }
-    private void initPiano(Pair<Integer, Integer> blackDrawable, Pair<Integer, Integer> whiteDrawable) {
-        Drawable mBlackDrawable = ContextCompat.getDrawable(context, blackDrawable.second);
-        Drawable mWhiteDrawable = ContextCompat.getDrawable(context, whiteDrawable.second);
+
+
+    private void initPiano(Pair<Object, Object> blackDrawable, Pair<Object, Object> whiteDrawable) {
+        Drawable mBlackDrawable = PianoConvertUtils.getDrawable(context, blackDrawable).second;
+        Drawable mWhiteDrawable = PianoConvertUtils.getDrawable(context, whiteDrawable).second;
+        if (mBlackDrawable == null || mWhiteDrawable == null) return;
+
         if (scaleX > 0 && scaleY > 0) {
             //获取黑键和白键的高度和宽度
             blackKeyWidth = (int) ((float) mBlackDrawable.getIntrinsicWidth() * scaleX);
@@ -93,8 +100,8 @@ public class Piano {
                     keys[j].setPressed(false);
 
                     StateListDrawable drawable = new StateListDrawable();
-                    drawable.addState(new int[]{android.R.attr.state_pressed}, ContextCompat.getDrawable(context, blackDrawable.first));
-                    drawable.addState(new int[]{-android.R.attr.state_pressed}, ContextCompat.getDrawable(context, blackDrawable.second));
+                    drawable.addState(new int[]{android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, blackDrawable).first);
+                    drawable.addState(new int[]{-android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, blackDrawable).second);
                     drawable.setState(new int[]{-android.R.attr.state_pressed});
 
                     keys[j].setKeyDrawable(
@@ -151,8 +158,8 @@ public class Piano {
                     mKeys[j].setPressed(false);
 
                     StateListDrawable drawable = new StateListDrawable();
-                    drawable.addState(new int[]{android.R.attr.state_pressed}, ContextCompat.getDrawable(context, whiteDrawable.first));
-                    drawable.addState(new int[]{-android.R.attr.state_pressed}, ContextCompat.getDrawable(context, whiteDrawable.second));
+                    drawable.addState(new int[]{android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, whiteDrawable).first);
+                    drawable.addState(new int[]{-android.R.attr.state_pressed}, PianoConvertUtils.getDrawable(context, whiteDrawable).second);
                     drawable.setState(new int[]{-android.R.attr.state_pressed});
                     mKeys[j].setKeyDrawable(
                             new ScaleDrawable(drawable,
