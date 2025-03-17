@@ -1,6 +1,6 @@
 plugins {
-//    id 'com.android.library'
-    id 'com.android.application'
+    id 'com.android.library'
+//    id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'maven-publish'
 }
@@ -10,7 +10,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.ice.apianoview"
+//        applicationId "com.ice.apianoview"
         minSdk 26
         targetSdk 34
         versionCode 1
