@@ -28,6 +28,7 @@ import com.ice.apianoview.entity.PianoKey;
 import com.ice.apianoview.listener.OnLoadAudioListener;
 import com.ice.apianoview.listener.OnPianoAutoPlayListener;
 import com.ice.apianoview.listener.OnPianoListener;
+import com.ice.apianoview.listener.TouchListener;
 import com.ice.apianoview.utils.AudioUtils;
 
 import java.util.ArrayList;
@@ -74,6 +75,8 @@ public class PianoView extends View implements Piano.PianoCallback {
     private OnPianoAutoPlayListener autoPlayListener;
     //接口
     private OnPianoListener pianoListener;
+
+    private TouchListener touchListener;
     //钢琴被滑动的一些属性
     private int progress = 0;
     //设置是否可以点击
@@ -256,6 +259,9 @@ public class PianoView extends View implements Piano.PianoCallback {
             case MotionEvent.ACTION_DOWN:
                 //多点触控，当其他手指点击键盘的手
             case MotionEvent.ACTION_POINTER_DOWN:
+                if (touchListener != null) {
+                    touchListener.onTouchDown();
+                }
                 handleDown(event.getActionIndex(), event);
                 break;
             //当手指在键盘上滑动的时候
@@ -274,6 +280,9 @@ public class PianoView extends View implements Piano.PianoCallback {
             //但最后一个手指抬起的时候
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
+                if (touchListener != null) {
+                    touchListener.onTouchUp();
+                }
                 handleUp();
                 return false;
             default:
@@ -625,6 +634,10 @@ public class PianoView extends View implements Piano.PianoCallback {
      */
     public void setAutoPlayListener(OnPianoAutoPlayListener autoPlayListener) {
         this.autoPlayListener = autoPlayListener;
+    }
+
+    public void setTouchListener(TouchListener touchListener) {
+        this.touchListener = touchListener;
     }
 
     //-----私有方法

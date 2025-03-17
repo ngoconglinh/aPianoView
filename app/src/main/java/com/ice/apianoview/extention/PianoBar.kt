@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import com.ice.apianoview.R
+import com.ice.apianoview.listener.TouchListener
 
 class PianoBar@JvmOverloads constructor(
     context: Context,
@@ -73,12 +74,14 @@ class PianoBar@JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         when(event?.action) {
             MotionEvent.ACTION_DOWN -> {
+                touchListener?.onTouchDown()
                 onTouch(event.x)
             }
             MotionEvent.ACTION_MOVE -> {
                 onTouch(event.x)
             }
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                touchListener?.onTouchUp()
                 if (progress > 100) progress = 100
             }
         }
@@ -97,6 +100,12 @@ class PianoBar@JvmOverloads constructor(
     fun addListener(progressListener: ProgressListener) {
         this.progressListener = progressListener
     }
+
+    fun addTouchListener(touchListener: TouchListener) {
+        this.touchListener = touchListener
+    }
+
+    private var touchListener: TouchListener? = null
 
     private var progressListener: ProgressListener? = null
 

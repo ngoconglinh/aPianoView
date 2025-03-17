@@ -164,7 +164,7 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
 
         val path = "${Environment.getExternalStorageDirectory()}/EasyPiano/Style/Piano/"
         Log.d("555124141", "applyPianoStyle: ${File(path).exists()} - $path")
-        if (false) {
+        if (true) {
             binding.pianoView.setStyle(
                 "${path}black_up.png",
                 "${path}black_down.png",
