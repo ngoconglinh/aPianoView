@@ -809,4 +809,8 @@ public class PianoView extends View implements Piano.PianoCallback {
         isInitFinish = false;
         invalidate();
     }
+
+    public void stopPlaySound() {
+        utils.stopPlaySound();
+    }
 }

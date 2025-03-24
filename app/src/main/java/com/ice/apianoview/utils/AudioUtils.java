@@ -234,6 +234,15 @@ public class AudioUtils implements LoadAudioMessage {
         pool.play(soundId, volume, volume, 1, 0, 1f);
     }
 
+    public void stopPlaySound() {
+        for (int i = 0; i < blackKeyMusics.size(); i++) {
+            pool.stop(blackKeyMusics.get(i));
+        }
+        for (int i = 0; i < whiteKeyMusics.size(); i++) {
+            pool.stop(whiteKeyMusics.get(i));
+        }
+    }
+
     /**
      * 结束
      */
