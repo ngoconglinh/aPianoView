@@ -445,15 +445,17 @@ public class PianoView extends View implements Piano.PianoCallback {
                             switch (entity.getType()) {
                                 case BLACK:
                                     PianoKey blackKey = null;
-                                    if (entity.getGroup() == 0) {
-                                        if (entity.getPosition() == 0) {
-                                            blackKey = blackPianoKeys.get(0)[0];
+                                    try {
+                                        if (entity.getGroup() == 0) {
+                                            if (entity.getPosition() == 0) {
+                                                blackKey = blackPianoKeys.get(0)[0];
+                                            }
+                                        } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
+                                            if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
+                                                blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
+                                            }
                                         }
-                                    } else if (entity.getGroup() > 0 && entity.getGroup() <= 7) {
-                                        if (entity.getPosition() >= 0 && entity.getPosition() <= 4) {
-                                            blackKey = blackPianoKeys.get(entity.getGroup())[entity.getPosition()];
-                                        }
-                                    }
+                                    } catch (IndexOutOfBoundsException ignored) {}
                                     if (blackKey != null) {
                                         Message msg = Message.obtain();
                                         msg.what = HANDLE_AUTO_PLAY_BLACK_DOWN;
@@ -463,21 +465,24 @@ public class PianoView extends View implements Piano.PianoCallback {
                                     break;
                                 case WHITE:
                                     PianoKey whiteKey = null;
-                                    if (entity.getGroup() == 0) {
-                                        if (entity.getPosition() == 0) {
-                                            whiteKey = whitePianoKeys.get(0)[0];
-                                        } else if (entity.getPosition() == 1) {
-                                            whiteKey = whitePianoKeys.get(0)[1];
+                                    try {
+                                        if (entity.getGroup() == 0) {
+                                            if (entity.getPosition() == 0) {
+                                                whiteKey = whitePianoKeys.get(0)[0];
+                                            } else if (entity.getPosition() == 1) {
+                                                whiteKey = whitePianoKeys.get(0)[1];
+                                            }
+                                        } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
+                                            if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
+                                                whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
+                                            }
+                                        } else if (entity.getGroup() == 8) {
+                                            if (entity.getPosition() == 0) {
+                                                whiteKey = whitePianoKeys.get(8)[0];
+                                            }
                                         }
-                                    } else if (entity.getGroup() >= 0 && entity.getGroup() <= 7) {
-                                        if (entity.getPosition() >= 0 && entity.getPosition() <= 6) {
-                                            whiteKey = whitePianoKeys.get(entity.getGroup())[entity.getPosition()];
-                                        }
-                                    } else if (entity.getGroup() == 8) {
-                                        if (entity.getPosition() == 0) {
-                                            whiteKey = whitePianoKeys.get(8)[0];
-                                        }
-                                    }
+                                    } catch (IndexOutOfBoundsException ignored) {}
+
                                     if (whiteKey != null) {
                                         Message msg = Message.obtain();
                                         msg.what = HANDLE_AUTO_PLAY_WHITE_DOWN;
