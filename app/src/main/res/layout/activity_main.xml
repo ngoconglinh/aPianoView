@@ -68,8 +68,8 @@
             android:layout_width="40dp"
             android:layout_marginStart="15dp"
             android:layout_height="40dp"
-            android:background="@drawable/ic_launcher_background"
-            android:foreground="@drawable/ic_launcher_foreground" />
+            android:background="@drawable/left_arrow"
+            android:foreground="@drawable/left_arrow" />
     </LinearLayout>
 
     <com.ice.apianoview.view.PianoView
