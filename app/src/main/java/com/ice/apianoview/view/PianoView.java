@@ -167,18 +167,22 @@ public class PianoView extends View implements Piano.PianoCallback {
 
     private Pair<Object, Object> blackKeyDrawable;
     private Pair<Object, Object> whiteKeyDrawable;
-
+    private boolean onInit = false;
 
     @Override
     protected void onDraw(Canvas canvas) {
         //初始化钢琴
         if (piano == null) {
+            onInit = true;
+            Log.d("7777777772342", "onPianoStartInit: " + getPianoWidth());
             pianoListener.onPianoStartInit();
             minRange = 0;
             maxRange = layoutWidth;
             piano = new Piano(context, Pair.create(scaleX, scaleY), blackKeyDrawable, whiteKeyDrawable, canvas, this);
         } else {
-            drawPianoKey(canvas);
+            if (!onInit) {
+                drawPianoKey(canvas);
+            }
         }
     }
 
@@ -201,7 +205,7 @@ public class PianoView extends View implements Piano.PianoCallback {
                 Log.e(TAG, e.getMessage());
             }
         }
-
+        onInit = false;
         postInvalidate();
     }
 
@@ -244,6 +248,7 @@ public class PianoView extends View implements Piano.PianoCallback {
         if (!isInitFinish && piano != null && pianoListener != null) {
             isInitFinish = true;
             pianoListener.onPianoInitFinish();
+            Log.d("7777777772342", "onPianoInitFinish: " + getPianoWidth());
         }
     }
 
@@ -527,6 +532,12 @@ public class PianoView extends View implements Piano.PianoCallback {
         }
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        autoPlayHandler.removeCallbacksAndMessages(null);
+    }
+
     public void stopAutoPlay() {
         if (autoPlayThread != null) {
             autoPlayThread.interrupt();
@@ -534,6 +545,7 @@ public class PianoView extends View implements Piano.PianoCallback {
         }
         autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_KEY_UP);
         autoPlayHandler.sendEmptyMessage(HANDLE_AUTO_PLAY_END);
+        autoPlayHandler.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -755,7 +767,7 @@ public class PianoView extends View implements Piano.PianoCallback {
     public Boolean zoomIn() {
         float scale = getScale() + 0.2f;
         if (scale > 2f) {
-            scale = 2f;
+            return true;
         }
         setScale(scale);
         return scale == 2f;
@@ -764,7 +776,7 @@ public class PianoView extends View implements Piano.PianoCallback {
     public Boolean zoomOut() {
         float scale = getScale() - 0.2f;
         if (scale < 1f) {
-            scale = 1f;
+            return true;
         }
         setScale(scale);
         return scale == 1f;
@@ -804,6 +816,9 @@ public class PianoView extends View implements Piano.PianoCallback {
     }
 
     public void refreshLayout() {
+        if (piano != null) {
+            piano.cancelInit();
+        }
         piano = null;
         isInitFinish = false;
         postInvalidate();

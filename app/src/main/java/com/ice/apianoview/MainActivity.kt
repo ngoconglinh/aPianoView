@@ -210,7 +210,6 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
     }
 
     override fun onPianoInitFinish() {
-        Log.d("56123132312", "onPianoInitFinish: ")
         binding.pianoBar.apply {
             attackPianoWidth = binding.pianoView.pianoWidth
             attackWidth = binding.pianoView.layoutWidth

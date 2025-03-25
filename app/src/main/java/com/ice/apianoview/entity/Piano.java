@@ -62,6 +62,7 @@ public class Piano {
         wHm.clear();
 
         for (int i = 0; i < BLACK_PIANO_KEY_GROUPS; i++) {
+            if (Thread.currentThread().isInterrupted()) return;
             PianoKey[] keys;
             switch (i) {
                 case 0:
@@ -72,11 +73,13 @@ public class Piano {
                     break;
             }
             for (int j = 0; j < keys.length; j++) {
+                if (Thread.currentThread().isInterrupted()) return;
                 bHm.put(i + "" + j, Pair.create(getDrawable(blackKey).first, getDrawable(blackKey).second));
             }
         }
 
         for (int i = 0; i < WHITE_PIANO_KEY_GROUPS; i++) {
+            if (Thread.currentThread().isInterrupted()) return;
             PianoKey[] mKeys;
             switch (i) {
                 case 0:
@@ -90,6 +93,7 @@ public class Piano {
                     break;
             }
             for (int j = 0; j < mKeys.length; j++) {
+                if (Thread.currentThread().isInterrupted()) return;
                 wHm.put(i + "" + j, Pair.create(getDrawable(whiteKey).first, getDrawable(whiteKey).second));
             }
         }
@@ -98,6 +102,7 @@ public class Piano {
         void onInitFinished(Canvas canvas);
     }
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     //构造函数
     public Piano(
             Context context,
@@ -110,179 +115,191 @@ public class Piano {
         this.context = context;
         this.scaleX = scale.first;
         this.scaleY = scale.second;
-        ExecutorService executor = Executors.newSingleThreadExecutor();
+        pianoWith = 0;
+        blackKeyWidth = 0;
+        blackKeyHeight = 0;
+        whiteKeyWidth = 0;
+        whiteKeyHeight = 0;
+
         executor.execute(() -> {
-            Log.d("555551321555", "Piano execute. blackKey: " + blackKey + " - whiteKey" + whiteKey);
             performStep1(blackKey, whiteKey);
             mainHandler.post(() -> {
-                initPiano();
-                callback.onInitFinished(canvas);
+                initPiano(callback, canvas);
             });
         });
     }
 
-    private void initPiano() {
-        Drawable mBlackDrawable = ContextCompat.getDrawable(context, R.drawable.black_down);
-        Drawable mWhiteDrawable = ContextCompat.getDrawable(context, R.drawable.white_up);
-        if (scaleX > 0 && scaleY > 0) {
-            //获取黑键和白键的高度和宽度
-            blackKeyWidth = (int) ((float) mBlackDrawable.getIntrinsicWidth() * scaleX);
-            blackKeyHeight = (int) ((float) mBlackDrawable.getIntrinsicHeight() * scaleY);
-            whiteKeyWidth = (int) ((float) mWhiteDrawable.getIntrinsicWidth() * scaleX);
-            whiteKeyHeight = (int) ((float) mWhiteDrawable.getIntrinsicHeight() * scaleY);
-            Log.d("6666666323", "initPiano: " + whiteKeyWidth + " whiteKeyHeight: " + whiteKeyHeight);
-            //初始化黑键
-            for (int i = 0; i < BLACK_PIANO_KEY_GROUPS; i++) {
-                PianoKey keys[];
-                switch (i) {
-                    case 0:
-                        keys = new PianoKey[1];
-                        break;
-                    default:
-                        keys = new PianoKey[5];
-                        break;
-                }
-                for (int j = 0; j < keys.length; j++) {
-                    keys[j] = new PianoKey();
-                    Rect areaOfKey[] = new Rect[1];
-                    keys[j].setType(PianoKeyType.BLACK);
-                    keys[j].setGroup(i);
-                    keys[j].setPositionOfGroup(j);
-                    keys[j].setVoiceId(getVoiceFromResources("b" + i + j));
-                    keys[j].setPressed(false);
+    public void cancelInit() {
+        executor.shutdownNow();
+    }
 
-                    StateListDrawable drawable = new StateListDrawable();
-                    drawable.addState(new int[]{android.R.attr.state_pressed}, bHm.get(i + "" + j).first);
-                    drawable.addState(new int[]{-android.R.attr.state_pressed}, bHm.get(i + "" + j).second);
-                    drawable.setState(new int[]{-android.R.attr.state_pressed});
+    private void initPiano(PianoCallback callback, Canvas canvas) {
+        try {
 
-                    keys[j].setKeyDrawable(
-                            new ScaleDrawable(drawable,
-                                    Gravity.NO_GRAVITY, scaleX, scaleY).getDrawable());
-                    setBlackKeyDrawableBounds(i, j, keys[j].getKeyDrawable());
-                    areaOfKey[0] = keys[j].getKeyDrawable().getBounds();
-                    keys[j].setAreaOfKey(areaOfKey);
-                    if (i == 0) {
-                        keys[j].setVoice(PianoVoice.LA);
-                        break;
-                    }
-                    switch (j) {
+            Drawable mBlackDrawable = ContextCompat.getDrawable(context, R.drawable.black_down);
+            Drawable mWhiteDrawable = ContextCompat.getDrawable(context, R.drawable.white_up);
+            if (scaleX > 0 && scaleY > 0) {
+                //获取黑键和白键的高度和宽度
+                blackKeyWidth = (int) ((float) mBlackDrawable.getIntrinsicWidth() * scaleX);
+                blackKeyHeight = (int) ((float) mBlackDrawable.getIntrinsicHeight() * scaleY);
+                whiteKeyWidth = (int) ((float) mWhiteDrawable.getIntrinsicWidth() * scaleX);
+                whiteKeyHeight = (int) ((float) mWhiteDrawable.getIntrinsicHeight() * scaleY);
+                Log.d("6666666323", "initPiano: " + whiteKeyWidth + " whiteKeyHeight: " + whiteKeyHeight);
+                //初始化黑键
+                for (int i = 0; i < BLACK_PIANO_KEY_GROUPS; i++) {
+                    PianoKey keys[];
+                    switch (i) {
                         case 0:
-                            keys[j].setVoice(PianoVoice.DO);
+                            keys = new PianoKey[1];
                             break;
-                        case 1:
-                            keys[j].setVoice(PianoVoice.RE);
+                        default:
+                            keys = new PianoKey[5];
                             break;
-                        case 2:
-                            keys[j].setVoice(PianoVoice.FA);
-                            break;
-                        case 3:
-                            keys[j].setVoice(PianoVoice.SO);
-                            break;
-                        case 4:
+                    }
+                    for (int j = 0; j < keys.length; j++) {
+                        keys[j] = new PianoKey();
+                        Rect areaOfKey[] = new Rect[1];
+                        keys[j].setType(PianoKeyType.BLACK);
+                        keys[j].setGroup(i);
+                        keys[j].setPositionOfGroup(j);
+                        keys[j].setVoiceId(getVoiceFromResources("b" + i + j));
+                        keys[j].setPressed(false);
+
+                        StateListDrawable drawable = new StateListDrawable();
+                        drawable.addState(new int[]{android.R.attr.state_pressed}, bHm.get(i + "" + j).first);
+                        drawable.addState(new int[]{-android.R.attr.state_pressed}, bHm.get(i + "" + j).second);
+                        drawable.setState(new int[]{-android.R.attr.state_pressed});
+
+                        keys[j].setKeyDrawable(
+                                new ScaleDrawable(drawable,
+                                        Gravity.NO_GRAVITY, scaleX, scaleY).getDrawable());
+                        setBlackKeyDrawableBounds(i, j, keys[j].getKeyDrawable());
+                        areaOfKey[0] = keys[j].getKeyDrawable().getBounds();
+                        keys[j].setAreaOfKey(areaOfKey);
+                        if (i == 0) {
                             keys[j].setVoice(PianoVoice.LA);
                             break;
+                        }
+                        switch (j) {
+                            case 0:
+                                keys[j].setVoice(PianoVoice.DO);
+                                break;
+                            case 1:
+                                keys[j].setVoice(PianoVoice.RE);
+                                break;
+                            case 2:
+                                keys[j].setVoice(PianoVoice.FA);
+                                break;
+                            case 3:
+                                keys[j].setVoice(PianoVoice.SO);
+                                break;
+                            case 4:
+                                keys[j].setVoice(PianoVoice.LA);
+                                break;
+                        }
                     }
+                    blackPianoKeys.add(keys);
                 }
-                blackPianoKeys.add(keys);
-            }
-            //初始化白键
-            for (int i = 0; i < WHITE_PIANO_KEY_GROUPS; i++) {
-                PianoKey[] mKeys;
-                switch (i) {
-                    case 0:
-                        mKeys = new PianoKey[2];
-                        break;
-                    case 8:
-                        mKeys = new PianoKey[1];
-                        break;
-                    default:
-                        mKeys = new PianoKey[7];
-                        break;
-                }
-                for (int j = 0; j < mKeys.length; j++) {
-                    mKeys[j] = new PianoKey();
-                    //固定属性
-                    mKeys[j].setType(PianoKeyType.WHITE);
-                    mKeys[j].setGroup(i);
-                    mKeys[j].setPositionOfGroup(j);
-                    mKeys[j].setVoiceId(getVoiceFromResources("w" + i + j));
-                    mKeys[j].setPressed(false);
+                //初始化白键
+                for (int i = 0; i < WHITE_PIANO_KEY_GROUPS; i++) {
+                    PianoKey[] mKeys;
+                    switch (i) {
+                        case 0:
+                            mKeys = new PianoKey[2];
+                            break;
+                        case 8:
+                            mKeys = new PianoKey[1];
+                            break;
+                        default:
+                            mKeys = new PianoKey[7];
+                            break;
+                    }
+                    for (int j = 0; j < mKeys.length; j++) {
+                        mKeys[j] = new PianoKey();
+                        //固定属性
+                        mKeys[j].setType(PianoKeyType.WHITE);
+                        mKeys[j].setGroup(i);
+                        mKeys[j].setPositionOfGroup(j);
+                        mKeys[j].setVoiceId(getVoiceFromResources("w" + i + j));
+                        mKeys[j].setPressed(false);
 
-                    StateListDrawable drawable = new StateListDrawable();
-                    drawable.addState(new int[]{android.R.attr.state_pressed}, wHm.get(i + "" + j).first);
-                    drawable.addState(new int[]{-android.R.attr.state_pressed}, wHm.get(i + "" + j).second);
-                    drawable.setState(new int[]{-android.R.attr.state_pressed});
-                    mKeys[j].setKeyDrawable(
-                            new ScaleDrawable(drawable,
-                                    Gravity.NO_GRAVITY, scaleX, scaleY).getDrawable());
-                    setWhiteKeyDrawableBounds(i, j, mKeys[j].getKeyDrawable());
-                    pianoWith += whiteKeyWidth;
-                    if (i == 0) {
+                        StateListDrawable drawable = new StateListDrawable();
+                        drawable.addState(new int[]{android.R.attr.state_pressed}, wHm.get(i + "" + j).first);
+                        drawable.addState(new int[]{-android.R.attr.state_pressed}, wHm.get(i + "" + j).second);
+                        drawable.setState(new int[]{-android.R.attr.state_pressed});
+                        mKeys[j].setKeyDrawable(
+                                new ScaleDrawable(drawable,
+                                        Gravity.NO_GRAVITY, scaleX, scaleY).getDrawable());
+                        setWhiteKeyDrawableBounds(i, j, mKeys[j].getKeyDrawable());
+                        pianoWith += whiteKeyWidth;
+                        if (i == 0) {
+                            switch (j) {
+                                case 0:
+                                    mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.RIGHT));
+                                    mKeys[j].setVoice(PianoVoice.LA);
+                                    mKeys[j].setLetterName("A0");
+                                    break;
+                                case 1:
+                                    mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT));
+                                    mKeys[j].setVoice(PianoVoice.SI);
+                                    mKeys[j].setLetterName("B0");
+                                    break;
+                            }
+                            continue;
+                        }
+                        if (i == 8) {
+                            Rect areaOfKey[] = new Rect[1];
+                            areaOfKey[0] = mKeys[j].getKeyDrawable().getBounds();
+                            mKeys[j].setAreaOfKey(areaOfKey);
+                            mKeys[j].setVoice(PianoVoice.DO);
+                            mKeys[j].setLetterName("C8");
+                            break;
+                        }
+                        //非固定属性
                         switch (j) {
                             case 0:
                                 mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.RIGHT));
-                                mKeys[j].setVoice(PianoVoice.LA);
-                                mKeys[j].setLetterName("A0");
+                                mKeys[j].setVoice(PianoVoice.DO);
+                                mKeys[j].setLetterName("C" + i);
                                 break;
                             case 1:
+                                mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT_RIGHT));
+                                mKeys[j].setVoice(PianoVoice.RE);
+                                mKeys[j].setLetterName("D" + i);
+                                break;
+                            case 2:
+                                mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT));
+                                mKeys[j].setVoice(PianoVoice.MI);
+                                mKeys[j].setLetterName("E" + i);
+                                break;
+                            case 3:
+                                mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.RIGHT));
+                                mKeys[j].setVoice(PianoVoice.FA);
+                                mKeys[j].setLetterName("F" + i);
+                                break;
+                            case 4:
+                                mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT_RIGHT));
+                                mKeys[j].setVoice(PianoVoice.SO);
+                                mKeys[j].setLetterName("G" + i);
+                                break;
+                            case 5:
+                                mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT_RIGHT));
+                                mKeys[j].setVoice(PianoVoice.LA);
+                                mKeys[j].setLetterName("A" + i);
+                                break;
+                            case 6:
                                 mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT));
                                 mKeys[j].setVoice(PianoVoice.SI);
-                                mKeys[j].setLetterName("B0");
+                                mKeys[j].setLetterName("B" + i);
                                 break;
                         }
-                        continue;
                     }
-                    if (i == 8) {
-                        Rect areaOfKey[] = new Rect[1];
-                        areaOfKey[0] = mKeys[j].getKeyDrawable().getBounds();
-                        mKeys[j].setAreaOfKey(areaOfKey);
-                        mKeys[j].setVoice(PianoVoice.DO);
-                        mKeys[j].setLetterName("C8");
-                        break;
-                    }
-                    //非固定属性
-                    switch (j) {
-                        case 0:
-                            mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.RIGHT));
-                            mKeys[j].setVoice(PianoVoice.DO);
-                            mKeys[j].setLetterName("C" + i);
-                            break;
-                        case 1:
-                            mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT_RIGHT));
-                            mKeys[j].setVoice(PianoVoice.RE);
-                            mKeys[j].setLetterName("D" + i);
-                            break;
-                        case 2:
-                            mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT));
-                            mKeys[j].setVoice(PianoVoice.MI);
-                            mKeys[j].setLetterName("E" + i);
-                            break;
-                        case 3:
-                            mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.RIGHT));
-                            mKeys[j].setVoice(PianoVoice.FA);
-                            mKeys[j].setLetterName("F" + i);
-                            break;
-                        case 4:
-                            mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT_RIGHT));
-                            mKeys[j].setVoice(PianoVoice.SO);
-                            mKeys[j].setLetterName("G" + i);
-                            break;
-                        case 5:
-                            mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT_RIGHT));
-                            mKeys[j].setVoice(PianoVoice.LA);
-                            mKeys[j].setLetterName("A" + i);
-                            break;
-                        case 6:
-                            mKeys[j].setAreaOfKey(getWhitePianoKeyArea(i, j, BlackKeyPosition.LEFT));
-                            mKeys[j].setVoice(PianoVoice.SI);
-                            mKeys[j].setLetterName("B" + i);
-                            break;
-                    }
+                    whitePianoKeys.add(mKeys);
                 }
-                whitePianoKeys.add(mKeys);
             }
-        }
+
+            callback.onInitFinished(canvas);
+        } catch (NullPointerException ignored) {}
     }
 
     public enum PianoVoice {
