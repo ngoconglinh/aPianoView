@@ -112,6 +112,7 @@ public class Piano {
         this.scaleY = scale.second;
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(() -> {
+            Log.d("555551321555", "Piano execute. blackKey: " + blackKey + " - whiteKey" + whiteKey);
             performStep1(blackKey, whiteKey);
             mainHandler.post(() -> {
                 initPiano();

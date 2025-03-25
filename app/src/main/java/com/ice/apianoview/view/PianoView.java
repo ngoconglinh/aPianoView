@@ -173,7 +173,6 @@ public class PianoView extends View implements Piano.PianoCallback {
     protected void onDraw(Canvas canvas) {
         //初始化钢琴
         if (piano == null) {
-            drawPianoKey(canvas);
             pianoListener.onPianoStartInit();
             minRange = 0;
             maxRange = layoutWidth;
@@ -203,7 +202,7 @@ public class PianoView extends View implements Piano.PianoCallback {
             }
         }
 
-        drawPianoKey(canvas);
+        postInvalidate();
     }
 
     private void drawPianoKey(Canvas canvas) {
@@ -784,7 +783,7 @@ public class PianoView extends View implements Piano.PianoCallback {
      */
     public void isShowNote(boolean isShow) {
         isShowNote = isShow;
-        invalidate();
+        postInvalidate();
     }
 
     /**
@@ -807,7 +806,7 @@ public class PianoView extends View implements Piano.PianoCallback {
     public void refreshLayout() {
         piano = null;
         isInitFinish = false;
-        invalidate();
+        postInvalidate();
     }
 
     public void stopPlaySound() {
