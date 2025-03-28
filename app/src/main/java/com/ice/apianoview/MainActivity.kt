@@ -2,6 +2,8 @@ package com.ice.apianoview
 
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.ice.apianoview.databinding.ActivityMainBinding
@@ -186,6 +188,8 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
         binding.pianoView.setPianoListener(this)
         binding.pianoView.setAutoPlayListener(this)
         binding.pianoView.setLoadAudioListener(this)
+
+        binding.pianoBar.addListener(this@MainActivity)
     }
 
     private fun handleEvent() {
@@ -213,7 +217,6 @@ class MainActivity : AppCompatActivity(), OnPianoListener, OnLoadAudioListener,
         binding.pianoBar.apply {
             attackPianoWidth = binding.pianoView.pianoWidth
             attackWidth = binding.pianoView.layoutWidth
-            addListener(this@MainActivity)
         }
     }
 

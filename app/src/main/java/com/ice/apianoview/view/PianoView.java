@@ -248,7 +248,7 @@ public class PianoView extends View implements Piano.PianoCallback {
         if (!isInitFinish && piano != null && pianoListener != null) {
             isInitFinish = true;
             pianoListener.onPianoInitFinish();
-            Log.d("7777777772342", "onPianoInitFinish: " + getPianoWidth());
+            scroll(progress);
         }
     }
 
@@ -614,6 +614,10 @@ public class PianoView extends View implements Piano.PianoCallback {
         this.progress = progress;
     }
 
+    public Integer getProgress() {
+        return this.progress;
+    }
+
     /**
      * 设置soundPool maxStream
      *
@@ -724,6 +728,7 @@ public class PianoView extends View implements Piano.PianoCallback {
      * @param key 　钢琴键
      */
     private void autoScroll(PianoKey key) {
+        if (!isInitFinish) return;
         if (isAutoPlaying) {//正在自动播放
             if (key != null) {
                 Rect[] areas = key.getAreaOfKey();
