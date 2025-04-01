@@ -305,18 +305,22 @@ public class PianoView extends View implements Piano.PianoCallback {
         int x = (int) event.getX(which) + this.getScrollX();
         int y = (int) event.getY(which);
         //检查白键
-        for (int i = 0; i < whitePianoKeys.size(); i++) {
-            for (PianoKey key : whitePianoKeys.get(i)) {
-                if (!key.isPressed() && key.contains(x, y)) {
-                    handleWhiteKeyDown(which, event, key);
+        if (whitePianoKeys != null) {
+            for (int i = 0; i < whitePianoKeys.size(); i++) {
+                for (PianoKey key : whitePianoKeys.get(i)) {
+                    if (!key.isPressed() && key.contains(x, y)) {
+                        handleWhiteKeyDown(which, event, key);
+                    }
                 }
             }
         }
         //检查黑键
-        for (int i = 0; i < blackPianoKeys.size(); i++) {
-            for (PianoKey key : blackPianoKeys.get(i)) {
-                if (!key.isPressed() && key.contains(x, y)) {
-                    handleBlackKeyDown(which, event, key);
+        if (blackPianoKeys != null) {
+            for (int i = 0; i < blackPianoKeys.size(); i++) {
+                for (PianoKey key : blackPianoKeys.get(i)) {
+                    if (!key.isPressed() && key.contains(x, y)) {
+                        handleBlackKeyDown(which, event, key);
+                    }
                 }
             }
         }
